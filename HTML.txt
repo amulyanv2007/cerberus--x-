@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CERBERUS-X | AI Intelligence</title>
+
+    <link rel="stylesheet"
+    href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+<div class="app">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div class="brand">
+            <div class="brand-icon">C</div>
+            <div>
+                <h2>CERBERUS-X</h2>
+                <small>INTELLIGENCE SYSTEM</small>
+            </div>
+        </div>
+
+        <p class="menu-label">MAIN MENU</p>
+
+        <nav>
+            <a href="#dashboard" class="nav-link active">◈ Dashboard</a>
+            <a href="#upload" class="nav-link">⇧ Upload Documents</a>
+            <a href="#graph" class="nav-link">◎ Knowledge Graph</a>
+            <a href="#conflicts" class="nav-link">⚡ Conflict Detection</a>
+            <a href="#assistant" class="nav-link">✧ AI Assistant</a>
+            <a href="#reports" class="nav-link">▤ Evidence Reports</a>
+        </nav>
+
+        <div class="sidebar-bottom">
+            <span class="online-dot"></span>
+            Offline-ready architecture
+            <small>Local processing setup</small>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main">
+
+        <header class="topbar">
+            <div>
+                <h2>Intelligence Dashboard</h2>
+                <p>Multimodal Evidence & Conflict-Aware Reasoning</p>
+            </div>
+
+            <div class="user">
+                <span>● System</span>
+                <div class="avatar">CX</div>
+            </div>
+        </header>
+
+        <!-- DASHBOARD -->
+        <section id="dashboard" class="section">
+            <div class="welcome">
+                <div>
+                    <span class="tag">AI POWERED KNOWLEDGE SYSTEM</span>
+                    <h1>Welcome to CERBERUS-X</h1>
+                    <p>Discover facts. Detect conflicts. Trust evidence.</p>
+                </div>
+                <div class="hero-symbol">◈</div>
+            </div>
+
+            <h3>System Overview</h3>
+
+            <div class="stats">
+                <div class="stat-card">
+                    <span>Documents Uploaded</span>
+                    <h2 id="documentCount">0</h2>
+                    <small>Uploaded files</small>
+                </div>
+
+                <div class="stat-card">
+                    <span>Facts Extracted</span>
+                    <h2>0</h2>
+                    <small>Awaiting processing</small>
+                </div>
+
+                <div class="stat-card">
+                    <span>Conflicts Detected</span>
+                    <h2>0</h2>
+                    <small>Awaiting analysis</small>
+                </div>
+
+                <div class="stat-card">
+                    <span>Evidence Sources</span>
+                    <h2>0</h2>
+                    <small>Sources registered</small>
+                </div>
+            </div>
+        </section>
+
+        <!-- UPLOAD -->
+        <section id="upload" class="section panel">
+            <div class="section-heading">
+                <div>
+                    <h2>Document Intelligence</h2>
+                    <p>Upload different types of evidence for analysis.</p>
+                </div>
+                <span class="tag">MULTIMODAL INPUT</span>
+            </div>
+
+            <div class="upload-box" id="dropArea">
+                <div class="upload-icon">⇧</div>
+                <h3>Upload your evidence files</h3>
+                <p>Drag and drop files here or browse your computer.</p>
+
+                <input type="file" id="fileInput"
+                accept=".pdf,.png,.jpg,.jpeg,.csv,.xlsx,.xls,.txt"
+                multiple hidden>
+
+                <button class="primary-btn" id="browseBtn">
+                    Browse Files
+                </button>
+
+                <small>PDF, PNG, JPG, CSV, XLSX, TXT</small>
+            </div>
+
+            <div id="fileList" class="file-list"></div>
+        </section>
+
+        <!-- KNOWLEDGE GRAPH -->
+        <section id="graph" class="section panel">
+            <div class="section-heading">
+                <div>
+                    <h2>Knowledge Graph</h2>
+                    <p>Visual representation of connected evidence.</p>
+                </div>
+                <span class="tag">RELATIONSHIP MAPPING</span>
+            </div>
+
+            <div class="graph-placeholder">
+                <div class="graph-node main-node">KNOWLEDGE</div>
+                <div class="graph-connections">
+                    <span>Documents</span>
+                    <span>Entities</span>
+                    <span>Evidence</span>
+                </div>
+                <p>Knowledge graph will appear after document processing.</p>
+            </div>
+        </section>
+
+        <!-- CONFLICTS -->
+        <section id="conflicts" class="section panel">
+            <div class="section-heading">
+                <div>
+                    <h2>Conflict Detection</h2>
+                    <p>Identify contradictory information across sources.</p>
+                </div>
+                <span class="tag">EVIDENCE ANALYSIS</span>
+            </div>
+
+            <div class="empty-state">
+                <div>⚡</div>
+                <h3>No conflicts analysed yet</h3>
+                <p>Upload documents and process them to identify conflicting facts.</p>
+            </div>
+        </section>
+
+        <!-- AI ASSISTANT -->
+        <section id="assistant" class="section panel">
+            <div class="section-heading">
+                <div>
+                    <h2>AI Evidence Assistant</h2>
+                    <p>Ask questions about your uploaded documents.</p>
+                </div>
+                <span class="tag">AI ASSISTANT</span>
+            </div>
+
+            <div class="chat-box">
+                <div class="ai-message">
+                    <strong>CERBERUS-X AI</strong>
+                    <p>Hello! Upload your documents and ask me questions.
+                    I'll help analyse available evidence.</p>
+                </div>
+
+                <div id="chatMessages"></div>
+
+                <form id="chatForm" class="chat-input">
+                    <input type="text" id="question"
+                    placeholder="Ask something about your evidence..."
+                    required>
+                    <button class="primary-btn" type="submit">
+                        Send →
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <!-- REPORTS -->
+        <section id="reports" class="section panel">
+            <div class="section-heading">
+                <div>
+                    <h2>Evidence Reports</h2>
+                    <p>View traceable answers and source reliability.</p>
+                </div>
+            </div>
+
+            <div class="empty-state">
+                <div>▤</div>
+                <h3>No reports available</h3>
+                <p>Reports will be generated after evidence analysis.</p>
+            </div>
+        </section>
+
+        <footer>
+            CERBERUS-X © 2026 | Multimodal Evidence Intelligence
+        </footer>
+
+    </main>
+</div>
+
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+
+</body>
+</html>

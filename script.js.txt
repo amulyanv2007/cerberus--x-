@@ -1,0 +1,188 @@
+// CERBERUS-X BACKEND CONNECTION
+
+const fileInput = document.getElementById("fileInput");
+const browseBtn = document.getElementById("browseBtn");
+const dropArea = document.getElementById("dropArea");
+const fileList = document.getElementById("fileList");
+const documentCount = document.getElementById("documentCount");
+
+// OPEN FILE SELECTOR
+browseBtn.addEventListener("click", () => {
+    fileInput.click();
+});
+
+// SELECT FILES
+fileInput.addEventListener("change", async () => {
+    await handleFiles(fileInput.files);
+    fileInput.value = "";
+});
+
+// CREATE FILE DISPLAY
+function createFileItem(filename, status) {
+
+    const item = document.createElement("div");
+    item.className = "file-item";
+
+    const name = document.createElement("span");
+    name.textContent = "📄 " + filename;
+
+    const result = document.createElement("span");
+    result.textContent = status;
+
+    item.appendChild(name);
+    item.appendChild(result);
+
+    fileList.appendChild(item);
+
+    return result;
+}
+
+// ACTUAL FILE UPLOAD
+async function handleFiles(files) {
+
+    for (const file of Array.from(files)) {
+
+        const status = createFileItem(
+            file.name,
+            "Uploading..."
+        );
+
+        try {
+
+            const formData = new FormData();
+
+            formData.append("file", file);
+
+            const response = await fetch("/api/upload", {
+                method: "POST",
+                body: formData
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.message);
+            }
+
+            status.textContent = "✓ Uploaded";
+
+            status.style.color = "#22c55e";
+
+        } catch (error) {
+
+            status.textContent = "✗ " + error.message;
+
+            status.style.color = "#ef4444";
+        }
+    }
+
+    await loadDocuments();
+}
+
+// LOAD DOCUMENTS FROM DATABASE
+async function loadDocuments() {
+
+    try {
+
+        const response = await fetch("/api/documents");
+
+        const documents = await response.json();
+
+        documentCount.textContent = documents.length;
+
+        fileList.innerHTML = "";
+
+        documents.forEach(document => {
+
+            const item = document.createElement("div");
+            item.className = "file-item";
+
+            const name = document.createElement("span");
+            name.textContent = "📄 " + document.original_name;
+
+            const size = document.createElement("span");
+            size.textContent =
+                (document.file_size / 1024).toFixed(1) + " KB";
+
+            item.appendChild(name);
+            item.appendChild(size);
+
+            fileList.appendChild(item);
+        });
+
+    } catch (error) {
+
+        console.error("Could not load documents:", error);
+    }
+}
+
+// DRAG AND DROP
+dropArea.addEventListener("dragover", event => {
+    event.preventDefault();
+    dropArea.classList.add("dragging");
+});
+
+dropArea.addEventListener("dragleave", () => {
+    dropArea.classList.remove("dragging");
+});
+
+dropArea.addEventListener("drop", async event => {
+
+    event.preventDefault();
+
+    dropArea.classList.remove("dragging");
+
+    await handleFiles(event.dataTransfer.files);
+});
+
+// NAVIGATION
+const navLinks = document.querySelectorAll(".nav-link");
+
+navLinks.forEach(link => {
+
+    link.addEventListener("click", () => {
+
+        navLinks.forEach(item =>
+            item.classList.remove("active")
+        );
+
+        link.classList.add("active");
+    });
+});
+
+// CHAT DEMO
+const chatForm = document.getElementById("chatForm");
+const questionInput = document.getElementById("question");
+const chatMessages = document.getElementById("chatMessages");
+
+chatForm.addEventListener("submit", event => {
+
+    event.preventDefault();
+
+    const question = questionInput.value.trim();
+
+    if (!question) return;
+
+    const message = document.createElement("div");
+    message.className = "file-item";
+    message.textContent = "You: " + question;
+
+    chatMessages.appendChild(message);
+
+    const answer = document.createElement("div");
+    answer.className = "ai-message";
+
+    const heading = document.createElement("strong");
+    heading.textContent = "CERBERUS-X AI";
+
+    const paragraph = document.createElement("p");
+    paragraph.textContent =
+        "Your question is received. Evidence-based AI answering will be connected in a later phase.";
+
+    answer.appendChild(heading);
+    answer.appendChild(paragraph);
+
+    chatMessages.appendChild(answer);
+
+    questionInput.value = "";
+});

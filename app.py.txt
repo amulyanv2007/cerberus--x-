@@ -1,0 +1,180 @@
+from flask import Flask, render_template, request, jsonify
+from werkzeug.utils import secure_filename
+import sqlite3
+import os
+import uuid
+
+app = Flask(
+    __name__,
+    template_folder="../frontend",
+    static_folder="../frontend"
+)
+
+# PROJECT PATHS
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+UPLOAD_FOLDER = os.path.join(BASE_DIR, "uploads")
+DATABASE = os.path.join(BASE_DIR, "database.db")
+
+# CONFIGURATION
+app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+app.config["MAX_CONTENT_LENGTH"] = 25 * 1024 * 1024
+
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+ALLOWED_EXTENSIONS = {
+    "pdf", "png", "jpg", "jpeg",
+    "csv", "xlsx", "xls", "txt"
+}
+
+
+# DATABASE CONNECTION
+def get_db():
+    connection = sqlite3.connect(DATABASE)
+    connection.row_factory = sqlite3.Row
+    return connection
+
+
+# CREATE DATABASE TABLE
+def initialize_database():
+    connection = get_db()
+
+    connection.execute("""
+        CREATE TABLE IF NOT EXISTS documents (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            original_name TEXT NOT NULL,
+            saved_name TEXT NOT NULL,
+            file_type TEXT NOT NULL,
+            file_size INTEGER NOT NULL,
+            uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+
+    connection.commit()
+    connection.close()
+
+
+# CHECK FILE EXTENSION
+def allowed_file(filename):
+    return (
+        "." in filename and
+        filename.rsplit(".", 1)[1].lower()
+        in ALLOWED_EXTENSIONS
+    )
+
+
+# HOME PAGE
+@app.route("/")
+def home():
+    return render_template("index.html")
+
+
+# UPLOAD DOCUMENT
+@app.route("/api/upload", methods=["POST"])
+def upload_document():
+
+    if "file" not in request.files:
+        return jsonify({
+            "success": False,
+            "message": "No file received"
+        }), 400
+
+    file = request.files["file"]
+
+    if file.filename == "":
+        return jsonify({
+            "success": False,
+            "message": "Please select a file"
+        }), 400
+
+    if not allowed_file(file.filename):
+        return jsonify({
+            "success": False,
+            "message": "File format not supported"
+        }), 400
+
+    original_name = secure_filename(file.filename)
+
+    if not original_name:
+        return jsonify({
+            "success": False,
+            "message": "Invalid filename"
+        }), 400
+
+    extension = original_name.rsplit(".", 1)[1].lower()
+
+    saved_name = str(uuid.uuid4()) + "." + extension
+
+    file_path = os.path.join(
+        app.config["UPLOAD_FOLDER"],
+        saved_name
+    )
+
+    try:
+        file.save(file_path)
+
+        file_size = os.path.getsize(file_path)
+
+        connection = get_db()
+
+        cursor = connection.execute("""
+            INSERT INTO documents
+            (original_name, saved_name, file_type, file_size)
+            VALUES (?, ?, ?, ?)
+        """, (
+            original_name,
+            saved_name,
+            extension,
+            file_size
+        ))
+
+        document_id = cursor.lastrowid
+
+        connection.commit()
+        connection.close()
+
+        return jsonify({
+            "success": True,
+            "message": "Document uploaded successfully",
+            "id": document_id,
+            "filename": original_name,
+            "type": extension,
+            "size": file_size
+        })
+
+    except Exception as error:
+
+        if os.path.exists(file_path):
+            os.remove(file_path)
+
+        return jsonify({
+            "success": False,
+            "message": "Upload failed"
+        }), 500
+
+
+# GET ALL DOCUMENTS
+@app.route("/api/documents", methods=["GET"])
+def get_documents():
+
+    connection = get_db()
+
+    documents = connection.execute("""
+        SELECT * FROM documents
+        ORDER BY uploaded_at DESC
+    """).fetchall()
+
+    connection.close()
+
+    return jsonify([
+        dict(document) for document in documents
+    ])
+
+
+# START SERVER
+if __name__ == "__main__":
+
+    initialize_database()
+
+    print("CERBERUS-X Backend Started")
+
+    app.run(debug=True)
